@@ -29,6 +29,7 @@ class Minesweeper
       load
     else
       puts "invalid input!"
+      puts
       start_game
     end
 
@@ -72,11 +73,13 @@ class Minesweeper
   def save
     print "file name: "
     file_name = gets.chomp
+
+    temp = [@player_board, @solution_board]
+
     File.open(file_name, 'w') do |file|
-      file.puts @player_board.to_yaml
-      file.puts "break here"
-      file.puts @solution_board.to_yaml
+      file.puts temp.to_yaml
     end
+
     puts "game saved!"
     start_game
   end
@@ -86,15 +89,14 @@ class Minesweeper
     file_name = gets.chomp
 
     if File.exists?(file_name)
-      input = YAML::load(File.read(file_name))
+      load_file = YAML::load(File.read(file_name))
     elsif file_name == "quit"
       start_game
     else
       puts "invalid file name!"
       load
     end
-
-    p input
+    @player_board, @solution_board = load_file
   end
 
   def reveal(x,y)
@@ -254,31 +256,9 @@ class Minesweeper
 
   def answer
     @solution_board.each { |line| p line }
+    puts
   end
 end
 
 mines = Minesweeper.new
 mines.start_game
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
