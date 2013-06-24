@@ -115,6 +115,7 @@ class Minesweeper
 
   def get_user_xy
     puts "please enter the coordinates (e.g.: 2,3)"
+    #REV:(great use of the block!)
     input = gets.chomp.split(",").map(&:to_i)
   end
 
@@ -197,6 +198,7 @@ class Minesweeper
   end
 
   def check_neighbors(x1,y1)
+    #REV:(maybe this could be two methods? One that returns an array of   m    adjacent_squares and one that performs the action on them. )
     adjacent_squares = []
     @neighbors_key.each do |diff|
       x, y = x1 + diff[0], y1 + diff[1]
@@ -218,6 +220,7 @@ class Minesweeper
     end
   end
 
+  #REV:(We built and array with the location of each flag and used == to compare it to an array with the locations of each bomb. If they were equal, flagged_mines? returns true. Could possibly shorten this?)
   def flagged_mines?
     count = 0
     @player_board.each_index do |row|
