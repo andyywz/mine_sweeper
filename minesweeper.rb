@@ -1,3 +1,5 @@
+require 'yaml'
+
 class Minesweeper
   def initialize
     @solution_board = []
@@ -17,10 +19,15 @@ class Minesweeper
 
   def start_game
     puts "Welcome to Minesweeper!"
-    print "Pick board size (1: 9x9 or 2: 16x16): "
-    board_size = gets.chomp
-    set_boards(board_size)
-
+    puts "new game or load saved game? (n: new game, l: load game)"
+    input = gets.chomp
+    if input == "n"
+      print "Pick board size (1: 9x9 or 2: 16x16): "
+      board_size = gets.chomp
+      set_boards(board_size)
+    elsif input == "l"
+      load
+    end
     until game_over?
       display_board
       player_turn
@@ -50,6 +57,30 @@ class Minesweeper
       password = gets.chomp
       answer if password == "andyisfreakingawesome"
     end
+  end
+
+  def save
+    print "file name: "
+    file_name = gets.chomp
+    File.open(file_name, 'w') do |file|
+      file.puts @player_board.to_yaml
+      file.puts "break here"
+      file.puts @solution_board.to_yaml
+    end
+    puts "game saved!"
+    start_game
+  end
+
+  def load
+    print "enter file name: "
+    file_name = gets.chomp
+
+    if File.exists?(file_name)
+      YAML::load(File.read(file_name))
+    else
+      puts "invalid file name!"
+    end
+
   end
 
   def reveal(x,y)
