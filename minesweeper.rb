@@ -27,7 +27,11 @@ class Minesweeper
       set_boards(board_size)
     elsif input == "l"
       load
+    else
+      puts "invalid input!"
+      start_game
     end
+
     until game_over?
       display_board
       player_turn
@@ -53,6 +57,9 @@ class Minesweeper
       print "Password: "
       password = gets.chomp
       answer if password == "andyisfreakingawesome"
+    else
+      puts "invalid input!"
+      player_turn
     end
   end
 
