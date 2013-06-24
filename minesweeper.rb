@@ -30,19 +30,25 @@ class Minesweeper
   end
 
   def player_turn
-    puts "choose an action (f: flag or r: reveal):"
+    puts "choose an action (s: save game, f: flag or r: reveal):"
     action = gets.chomp
     puts "please enter the coordinates (e.g.: 2,3)"
     input = gets.chomp.split(",").map(&:to_i)
     x,y = input
 
-    if action == 'f'
+    if action == "f"
       flag(x,y)
-    elsif action == 'r'
+    elsif action == "r"
       reveal(x,y)
       if @solution_board[x][y] == "_"
         check_neighbors(x,y)
       end
+    elsif action == "s"
+      save
+    elsif action == "cheat"
+      print "Password: "
+      password = gets.chomp
+      answer if password == "andyisfreakingawesome"
     end
   end
 
@@ -136,8 +142,6 @@ class Minesweeper
 
     mine_location(num_of_mines,size) # adds mines to the board
     number_generator                 # adds numbers to the board
-
-    @solution_board.each { |line| p line }
   end
 
   def set_player_board(size)
