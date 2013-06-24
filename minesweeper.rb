@@ -27,8 +27,8 @@ class Minesweeper
       end
     end
 
-    mine_location(num_of_mines,size)
-    number_generator
+    mine_location(num_of_mines,size) # adds mines to the board
+    number_generator                 # adds numbers to the board
 
   end
 
@@ -46,9 +46,11 @@ class Minesweeper
 
   def number_generator
     adjacent_hash = get_adjacent_hash
-
-
-
+    adjacent_hash.each do |coord, count|
+      x,y = coord
+      @solution_board[x][y] = "#{count}"
+    end
+    @solution_board.each { |line| p line }
   end
 
   def reveal
@@ -72,7 +74,9 @@ class Minesweeper
           end
           x, y = coord[0] + x_diff, coord[1] + y_diff
           location = [x, y]
-          adjacent_squares << location if (x.between?(0,8) && y.between?(0,8))
+          if x.between?(0,8) && y.between?(0,8) && !@mine_coordinates.include?([x,y])
+            adjacent_squares << location
+          end
           y_diff += 1
         end
         x_diff += 1
