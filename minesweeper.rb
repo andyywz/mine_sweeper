@@ -1,3 +1,4 @@
+require 'time'
 require 'yaml'
 
 class Minesweeper
@@ -19,24 +20,44 @@ class Minesweeper
 
   def start_game
     puts "Welcome to Minesweeper!"
-    puts "new game or load saved game? (n: new game, l: load game)"
+    puts "new game, load game, or show scoreboard? (n: new, l: load, s: scoreboard)"
     input = gets.chomp
     if input == "n"
       print "Pick board size (1: 9x9 or 2: 16x16): "
       board_size = gets.chomp
       set_boards(board_size)
+      game
     elsif input == "l"
       load
+      game
+    elsif input == "s"
+      puts "9: 9x9 or 16: 16x16"
+      number = gets.chomp.to_i
+      display_scoreboard(number)
+      start_game
+    elsif input == "reset"
+      print "Password: "
+      password = gets.chomp
+      if password == "andyisfreakingawesome"
+        reset_scoreboard
+      else
+        puts "invalid password!"
+        start_game
+      end
     else
       puts "invalid input!"
       puts
       start_game
     end
+  end
 
+  def game
+    @start_time = Time.now
     until game_over?
       display_board
       player_turn
     end
+    display_scoreboard
   end
 
   def player_turn
@@ -64,27 +85,74 @@ class Minesweeper
     end
   end
 
-  def get_user_xy
-    puts "please enter the coordinates (e.g.: 2,3)"
-    input = gets.chomp
-    xy = []
-    if input.include?(",")
-      input = input.split(",").map(&:strip)
-      input.each do |item|
-        valid_numbers = ("0".."8").to_a if @player_board.length == 9
-        valid_numbers = ("0".."15").to_a if @player_board.length == 16
-        if valid_numbers.include?(item)
-          xy << item.to_i
-        else
-          puts "invalid input!"
-          get_user_xy
+  def game_over?
+    unexplored_count = 0
+    @player_board.each_index do |row|
+      @player_board.each_index do |col|
+        if @player_board[row][col] == "B"
+          @solution_board[row][col] = "X"
+          display_board(true)
+          puts "You lose! GAME OVER!"
+          return true
+        elsif @player_board[row][col] == "*"
+          unexplored_count += 1
         end
       end
-    else
-      puts "invalid input!"
-      get_user_xy
     end
-    xy
+    if flagged_mines? || unexplored_count == 0
+      puts "You Win!"
+      @time_taken = Time.now - @start_time
+      save_score
+      return true
+    end
+    false
+  end
+
+  def get_user_xy
+    puts "please enter the coordinates (e.g.: 2,3)"
+    input = gets.chomp.split(",").map(&:to_i)
+    input
+  end
+
+  def display_scoreboard(number = @player_board.length)
+    puts "High Scores for #{number}x#{number}!"
+    load_scores(number)[0..9].each_with_index do |score,index|
+      name, time = score
+      time = time.to_s
+      puts "#{index + 1}. #{name} #{time.rjust(20)} seconds"
+    end
+  end
+
+  def reset_scoreboard
+    File.open("high_scores_9", 'w') do |file|
+      file.puts [].to_yaml
+    end
+
+    File.open("high_scores_16", 'w') do |file|
+      file.puts [].to_yaml
+    end
+  end
+
+  def load_scores(number = @player_board.length)
+    scoreboard = YAML::load(File.read("high_scores_#{number}"))
+  end
+
+  def save_score
+    print "Enter your name: "
+    name = gets.chomp
+    entry = [name, @time_taken]
+    number = @player_board.length
+    old_scoreboard = load_scores(number)
+
+    new_scoreboard = old_scoreboard << entry
+
+    new_scoreboard = new_scoreboard.sort_by {|name,time| time}
+
+    File.open("high_scores_#{number}", "w") do |file|
+      file.puts new_scoreboard.to_yaml
+    end
+
+    puts "Scoreboard Updated!"
   end
 
   def save
@@ -163,27 +231,6 @@ class Minesweeper
     else
       false
     end
-  end
-
-  def game_over?
-    unexplored_count = 0
-    @player_board.each_index do |row|
-      @player_board.each_index do |col|
-        if @player_board[row][col] == "B"
-          @solution_board[row][col] = "X"
-          display_board(true)
-          puts "You lose! GAME OVER!"
-          return true
-        elsif @player_board[row][col] == "*"
-          unexplored_count += 1
-        end
-      end
-    end
-    if flagged_mines? || unexplored_count == 0
-      puts "You Win!"
-      return true
-    end
-    false
   end
 
   def display_board(solution_board = false)
