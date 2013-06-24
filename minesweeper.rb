@@ -32,20 +32,17 @@ class Minesweeper
       display_board
       player_turn
     end
-
-    puts "game over!"
   end
 
   def player_turn
     puts "choose an action (s: save game, f: flag or r: reveal):"
     action = gets.chomp
-    puts "please enter the coordinates (e.g.: 2,3)"
-    input = gets.chomp.split(",").map(&:to_i)
-    x,y = input
 
     if action == "f"
+      x,y = get_user_xy
       flag(x,y)
     elsif action == "r"
+      x,y = get_user_xy
       reveal(x,y)
       if @solution_board[x][y] == "_"
         check_neighbors(x,y)
@@ -57,6 +54,12 @@ class Minesweeper
       password = gets.chomp
       answer if password == "andyisfreakingawesome"
     end
+  end
+
+  def get_user_xy
+    puts "please enter the coordinates (e.g.: 2,3)"
+    input = gets.chomp.split(",").map(&:to_i)
+    input
   end
 
   def save
@@ -72,15 +75,19 @@ class Minesweeper
   end
 
   def load
-    print "enter file name: "
+    print "enter file name or quit to go back to menu: "
     file_name = gets.chomp
 
     if File.exists?(file_name)
-      YAML::load(File.read(file_name))
+      input = YAML::load(File.read(file_name))
+    elsif file_name == "quit"
+      start_game
     else
       puts "invalid file name!"
+      load
     end
 
+    p input
   end
 
   def reveal(x,y)
@@ -139,14 +146,17 @@ class Minesweeper
         if @player_board[row][col] == "B"
           @solution_board[row][col] = "X"
           display_board(true)
+          puts "You lose! GAME OVER!"
           return true
         elsif @player_board[row][col] == "*"
           unexplored_count += 1
         end
       end
     end
-    return true if flagged_mines?
-    return true if unexplored_count == 0
+    if flagged_mines? || unexplored_count == 0
+      puts "You Win!"
+      return true
+    end
     false
   end
 
