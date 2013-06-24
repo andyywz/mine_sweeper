@@ -22,20 +22,21 @@ class Minesweeper
     puts "Welcome to Minesweeper!"
     puts "new game, load game, or show scoreboard? (n: new, l: load, s: scoreboard)"
     input = gets.chomp
-    if input == "n"
+    case input
+    when "n"
       print "Pick board size (1: 9x9 or 2: 16x16): "
       board_size = gets.chomp
       set_boards(board_size)
       game
-    elsif input == "l"
+    when "l"
       load
       game
-    elsif input == "s"
+    when"s"
       puts "9: 9x9 or 16: 16x16"
       number = gets.chomp.to_i
       display_scoreboard(number)
       start_game
-    elsif input == "reset"
+    when "reset"
       print "Password: "
       password = gets.chomp
       if password == "andyisfreakingawesome"
@@ -64,18 +65,19 @@ class Minesweeper
     puts "choose an action (s: save game, f: flag or r: reveal):"
     action = gets.chomp
 
-    if action == "f"
+    case action
+    when "f"
       x,y = get_user_xy
       flag(x,y)
-    elsif action == "r"
+    when "r"
       x,y = get_user_xy
       reveal(x,y)
       if @solution_board[x][y] == "_"
         check_neighbors(x,y)
       end
-    elsif action == "s"
+    when "s"
       save
-    elsif action == "cheat"
+    when "cheat"
       print "Password: "
       password = gets.chomp
       answer if password == "andyisfreakingawesome"
@@ -87,6 +89,7 @@ class Minesweeper
 
   def game_over?
     unexplored_count = 0
+
     @player_board.each_index do |row|
       @player_board.each_index do |col|
         if @player_board[row][col] == "B"
@@ -99,19 +102,20 @@ class Minesweeper
         end
       end
     end
+
     if flagged_mines? || unexplored_count == 0
       puts "You Win!"
       @time_taken = Time.now - @start_time
       save_score
       return true
     end
+
     false
   end
 
   def get_user_xy
     puts "please enter the coordinates (e.g.: 2,3)"
     input = gets.chomp.split(",").map(&:to_i)
-    input
   end
 
   def display_scoreboard(number = @player_board.length)
@@ -142,8 +146,8 @@ class Minesweeper
     name = gets.chomp
     entry = [name, @time_taken]
     number = @player_board.length
-    old_scoreboard = load_scores(number)
 
+    old_scoreboard = load_scores(number)
     new_scoreboard = old_scoreboard << entry
 
     new_scoreboard = new_scoreboard.sort_by {|name,time| time}
@@ -234,8 +238,21 @@ class Minesweeper
   end
 
   def display_board(solution_board = false)
-    @solution_board.each {|line| p line} if solution_board == true
-    @player_board.each {|line| p line}
+    print "   "
+    @solution_board.each_index {|index| print "#{index}".center(5)}
+    puts
+    if solution_board == true
+      @solution_board.each_with_index do |line, i|
+        print "#{i}".center(3)
+        print line
+        puts
+      end
+    end
+    @player_board.each_with_index do |line, i|
+      print "#{i}".center(3)
+      print line
+      puts
+    end
   end
 
   def set_boards(board_size)
@@ -296,12 +313,13 @@ class Minesweeper
 
   def get_adjacent_squares
     adjacent_squares = []
+    size = @solution_board.length - 1
 
     @mine_coordinates.each do |coord|
       @neighbors_key.each do |diff|
         x, y = coord[0] + diff[0], coord[1] + diff[1]
         location = [x,y]
-        if x.between?(0,8) && y.between?(0,8) && !@mine_coordinates.include?([x,y])
+        if x.between?(0,size) && y.between?(0,size) && !@mine_coordinates.include?([x,y])
           adjacent_squares << location
         end
       end
@@ -319,8 +337,14 @@ class Minesweeper
   end
 
   def answer
-    @solution_board.each { |line| p line }
+    print "   "
+    @solution_board.each_index {|index| print "#{index}".center(5)}
     puts
+    @solution_board.each_with_index do |line, i|
+      print "#{i}".center(3)
+      print line
+      puts
+    end
   end
 end
 
