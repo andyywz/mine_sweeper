@@ -66,8 +66,25 @@ class Minesweeper
 
   def get_user_xy
     puts "please enter the coordinates (e.g.: 2,3)"
-    input = gets.chomp.split(",").map(&:to_i)
-    input
+    input = gets.chomp
+    xy = []
+    if input.include?(",")
+      input = input.split(",").map(&:strip)
+      input.each do |item|
+        valid_numbers = ("0".."8").to_a if @player_board.length == 9
+        valid_numbers = ("0".."15").to_a if @player_board.length == 16
+        if valid_numbers.include?(item)
+          xy << item.to_i
+        else
+          puts "invalid input!"
+          get_user_xy
+        end
+      end
+    else
+      puts "invalid input!"
+      get_user_xy
+    end
+    xy
   end
 
   def save
