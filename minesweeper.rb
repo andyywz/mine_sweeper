@@ -1,6 +1,7 @@
 class Minesweeper
   def initialize
     @solution_board = []
+    @player_board = []
     @mine_coordinates = []
   end
 
@@ -8,10 +9,10 @@ class Minesweeper
     puts "Welcome to Minesweeper!"
     print "Pick board size (1: 9x9 or 2: 16x16): "
     board_size = gets.chomp
-    set_board(board_size)
+    set_boards(board_size)
   end
 
-  def set_board(board_size)
+  def set_boards(board_size)
     if board_size == "1"
       size = 9
       num_of_mines = 10
@@ -20,16 +21,34 @@ class Minesweeper
       num_of_mines = 40
     end
 
-    size.times do |row|
-      @solution_board << []
-      size.times do |col|
-        @solution_board[row][col] = '_'
-      end
-    end
+    set_solution_board(num_of_mines, size)
+    set_player_board(size)
+  end
+
+  def set_solution_board(num_of_mines, size)
+    @solution_board += create_default_board(size)
 
     mine_location(num_of_mines,size) # adds mines to the board
     number_generator                 # adds numbers to the board
 
+    # @solution_board.each { |line| p line }
+  end
+
+  def set_player_board(size)
+    @player_board += create_default_board(size)
+
+    # @player_board.each { |line| p line }
+  end
+
+  def create_default_board(size)
+    board = []
+    size.times do |row|
+      board << []
+      size.times do |col|
+        board[row][col] = '_'
+      end
+    end
+    board
   end
 
   def mine_location(num_of_mines,size)
@@ -50,7 +69,6 @@ class Minesweeper
       x,y = coord
       @solution_board[x][y] = "#{count}"
     end
-    @solution_board.each { |line| p line }
   end
 
   def reveal
