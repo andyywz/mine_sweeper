@@ -1,3 +1,5 @@
+# REV: Mostly looks good! The game works ok, could use some added user checks to make sure a valid coordinate is used (crashed otherwise), and allow for unflagging and don't allow for revealing a coordinate that you had already flagged. (And maybe get rid of the quotes on your printed screen.) The biggest concern I had is the hard coding of some "magic numbers" into the code (i mention below in my comments).
+
 require 'time'
 require 'yaml'
 
@@ -6,7 +8,7 @@ class Minesweeper
     @solution_board = []
     @player_board = []
     @mine_coordinates = []
-    @neighbors_key = [
+    @neighbors_key = [ # REV I like to make these class constants. Not really something that is unique to the instance, or anything that ever changes 
       [-1,-1],
       [-1,0],
       [-1,1],
@@ -18,7 +20,7 @@ class Minesweeper
     ]
   end
 
-  def start_game
+  def start_game # REV: excellent! Clear and doesn't contain any logic it shouldn't. 
     puts "Welcome to Minesweeper!"
     puts "new game, load game, or show scoreboard? (n: new, l: load, s: scoreboard)"
     input = gets.chomp
@@ -52,7 +54,7 @@ class Minesweeper
     end
   end
 
-  def game
+  def game # REV: again, nice short method with logic lodged elsewhere. Could be good to make those methods private to further make clear that they are just to be used within the class.
     @start_time = Time.now
     until game_over?
       display_board
@@ -61,7 +63,7 @@ class Minesweeper
     display_scoreboard
   end
 
-  def player_turn
+  def player_turn 
     puts "choose an action (s: save game, f: flag or r: reveal):"
     action = gets.chomp
 
@@ -115,10 +117,12 @@ class Minesweeper
 
   def get_user_xy
     puts "please enter the coordinates (e.g.: 2,3)"
-    input = gets.chomp.split(",").map(&:to_i)
+    input = gets.chomp.split(",").map(&:to_i) # REV: slick
   end
-
-  def display_scoreboard(number = @player_board.length)
+  
+  # REV: You have a whole bunch of scoreboard methods bunched together. Why not make a new Scoreboard class?
+  
+  def display_scoreboard(number = @player_board.length) # REV: Seems to limit you to square board!
     puts "High Scores for #{number}x#{number}!"
     load_scores(number)[0..9].each_with_index do |score,index|
       name, time = score
@@ -165,7 +169,7 @@ class Minesweeper
 
     temp = [@player_board, @solution_board]
 
-    File.open(file_name, 'w') do |file|
+    File.open(file_name, 'w') do |file| # REV: good use of block, no need to close file this way! I probably should have done this too...
       file.puts temp.to_yaml
     end
 
@@ -187,6 +191,8 @@ class Minesweeper
     end
     @player_board, @solution_board = load_file
   end
+  
+  # REV: interesting way to save and load game. it's good that you only need to keep track of two variables! But it seems like you aren't keeping track of time between save and load. ie, if you load a game that is one move away from winning, won't that give you a high score?
 
   def reveal(x,y)
     @player_board[x][y] = @solution_board[x][y]
@@ -197,7 +203,7 @@ class Minesweeper
   end
 
   def check_neighbors(x1,y1)
-    adjacent_squares = []
+    adjacent_squares = []  # REV: could be good to break off into separate adjacent_squares method, that returns an array of coordinates
     @neighbors_key.each do |diff|
       x, y = x1 + diff[0], y1 + diff[1]
       location = [x,y]
@@ -228,7 +234,7 @@ class Minesweeper
       end
     end
 
-    if count == 10 && @player_board.length == 9
+    if count == 10 && @player_board.length == 9 # REV: might be better not to hard code in constants like this. You can set them as class constants so you can see exactly where they come from
       true
     elsif count == 40
       true
@@ -241,7 +247,7 @@ class Minesweeper
     print "   "
     @solution_board.each_index {|index| print "#{index}".center(5)}
     puts
-    if solution_board == true
+    if solution_board == true # REV: if solution_board, no need for == true
       @solution_board.each_with_index do |line, i|
         print "#{i}".center(3)
         print line
@@ -257,7 +263,7 @@ class Minesweeper
 
   def set_boards(board_size)
     if board_size == "1"
-      size = 9
+      size = 9 # REV: another place with a 'magic number' hard coded into code. A good idea to avoid these, and define some constants up top. Something like BEGINNER_SIZE = 9, then you can do size = BEGINNER_SIZE and everyone knows what you are talking about
       num_of_mines = 10
     else
       size = 16
@@ -297,7 +303,7 @@ class Minesweeper
       @mine_coordinates << coordinate if !@mine_coordinates.include?(coordinate)
     end
 
-    @mine_coordinates.each do |coord|
+    @mine_coordinates.each do |coord| # REV: Could you shovel coordinate onto @mine_coordinates and set @solution_board at the same time? If so, maybe that means that you don't really need both instance variables
       x,y = coord
       @solution_board[x][y] = 'B'
     end
@@ -313,7 +319,7 @@ class Minesweeper
 
   def get_adjacent_squares
     adjacent_squares = []
-    size = @solution_board.length - 1
+    size = @solution_board.length - 1 # REV: seems to be hard coding in square boards
 
     @mine_coordinates.each do |coord|
       @neighbors_key.each do |diff|
@@ -327,8 +333,8 @@ class Minesweeper
     adjacent_squares
   end
 
-  def get_adjacent_hash
-    adjacent_squares = get_adjacent_squares
+  def get_adjacent_hash # REV: Seems like you could just make an adjacent hash without making the array, no? Instead of adjacent_squares << location, you could just do adjacent_squares[location] += 1
+    adjacent_squares = get_adjacent_squares 
     adjacent_hash = Hash.new(0)
     adjacent_squares.each do |coord|
       adjacent_hash[coord] += 1
